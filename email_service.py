@@ -1,6 +1,6 @@
 """
 Servicio de envío de emails usando Gmail SMTP.
-Envía notificaciones cuando se encuentran nuevas propiedades.
+Envía notificaciones cuando se encuentran nuevas propiedades..
 """
 import smtplib
 from email.mime.text import MIMEText
