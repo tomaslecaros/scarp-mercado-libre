@@ -99,17 +99,18 @@ def run_check():
     print("\n" + "="*80)
     print(f"🔍 Verificando propiedades - {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
     print("="*80)
-    
+
+    # Lista para acumular todas las propiedades nuevas de todos los filtros
+    all_new_properties = []
+    errors_count = 0
+
     try:
         # Estado inicial del almacenamiento
         from storage import load_properties_data, get_storage_stats
         stats = get_storage_stats()
         print(f"\n📊 Estado del almacenamiento ANTES de la verificación:")
         print(f"   Total de propiedades ya vistas: {stats['total_seen']}")
-        
-        # Lista para acumular todas las propiedades nuevas de todos los filtros
-        all_new_properties = []
-        
+
         # Recorrer cada filtro configurado
         print(f"\n🔍 Filtros configurados: {len(SEARCH_FILTERS)}")
         
@@ -124,15 +125,20 @@ def run_check():
             if not filter_url:
                 print(f"⚠ Saltando filtro '{filter_name}': No tiene URL configurada")
                 continue
-            
-            # 1. Scrapear propiedades de este filtro
-            print(f"\n1️⃣ SCRAPING: Obteniendo propiedades...")
-            print(f"   URL: {filter_url[:70]}...")
-            
-            all_properties = scrape_properties(filter_url)
-            
-            if not all_properties:
-                print(f"⚠ No se encontraron propiedades en este filtro.")
+
+            try:
+                # 1. Scrapear propiedades de este filtro
+                print(f"\n1️⃣ SCRAPING: Obteniendo propiedades...")
+                print(f"   URL: {filter_url[:70]}...")
+
+                all_properties = scrape_properties(filter_url)
+
+                if not all_properties:
+                    print(f"⚠ No se encontraron propiedades en este filtro.")
+                    continue
+            except Exception as e:
+                print(f"❌ Error al scrapear filtro '{filter_name}': {e}")
+                errors_count += 1
                 continue
             
             print(f"✓ Scraping completado: {len(all_properties)} propiedades encontradas")
@@ -165,6 +171,8 @@ def run_check():
         print(f"📊 RESUMEN GENERAL")
         print(f"{'='*80}")
         print(f"Total de propiedades nuevas encontradas: {len(all_new_properties)}")
+        if errors_count > 0:
+            print(f"⚠ Errores durante el scraping: {errors_count} filtro(s) con problemas")
         
         if not all_new_properties:
             print(f"\n✓ Resultado: No hay propiedades nuevas en ninguno de los filtros")
